@@ -3,6 +3,8 @@
 ;; Copyright (C) 2014  Jeremy Pierre
 
 ;; Author: Jeremy Pierre
+;; Version: 0.1
+;; Package-Requires: ((web "0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -130,6 +132,7 @@
   "Simple convenience function to grab the line under the cursor minus the newline char"
   (replace-regexp-in-string "\n$" "" (thing-at-point 'line)))
 
+;;;###autoload
 (defun riak-mode ()
   (switch-to-buffer (riak--output-buffer))
   (interactive)

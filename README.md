@@ -13,9 +13,9 @@ Generally speaking, this does everything to Riak that you're not supposed to do 
 #How Do I Use It?
 You probably shouldn't.
 
-But in case you want to, stick `riak-mode.el` somewhere in your emacs load path, run `M-x package-install emacs-web`  and do the following:
+But in case you want to, run `M-x package-install web` and do the following:
 
-`M-: (require 'riak-mode)`
+`M-x package-install-file path/to/riak-mode.el`
 
 `M-x riak-mode`
 
