@@ -134,8 +134,8 @@
 
 ;;;###autoload
 (defun riak-mode ()
-  (switch-to-buffer (riak--output-buffer))
   (interactive)
+  (switch-to-buffer (riak--output-buffer))
   (kill-all-local-variables)
   (let ((riak-node (read-from-minibuffer "Riak node to use:  ")))
     (setq riak-host riak-node))
