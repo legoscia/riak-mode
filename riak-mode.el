@@ -37,78 +37,78 @@
   "Convenience to wrap fetching buckets and the cached vector of them."
   (interactive) 
   (if (string= riak-mode-current-bucket "")
-      (get-riak-buckets riak-host)
-    (display-buckets riak-mode-bucket-vec)))
+      (riak--get-riak-buckets riak-host)
+    (riak--display-buckets riak-mode-bucket-vec)))
 
 (defun riak-mode-handle-select ()
   "Handle whether we're selecting a bucket or fetching keys or a key itself"
   (interactive)
   (if (string= riak-mode-current-bucket "")
-      (let ((bucket (line-at-cursor)))
+      (let ((bucket (riak--line-at-cursor)))
         (setq riak-mode-current-bucket bucket)
         (message (concat "Bucket is now " riak-mode-current-bucket))
-        (get-riak-keys riak-host bucket))
-    (let ((key (line-at-cursor)))
-      (get-key riak-host riak-mode-current-bucket key))))
+        (riak--get-riak-keys riak-host bucket))
+    (let ((key (riak--line-at-cursor)))
+      (riak--get-key riak-host riak-mode-current-bucket key))))
 
 
-(defun output-buffer () 
+(defun riak--output-buffer () 
   "Common handle to our output buffer"
   (get-buffer-create "*riak-mode-output*"))
 
-(defun get-riak-buckets (host)
+(defun riak--get-riak-buckets (host)
   "Fetch buckets from Riak, parse them and display them"
   (message "getting buckets, please wait")
   (web-http-get
    (lambda (con header data)
-     (display-buckets (parse-buckets data)))
+     (riak--display-buckets (riak--parse-buckets data)))
    :url (concat "http://" host ":" riak-mode-riak-port "/buckets?buckets=true")))
 
-(defun get-riak-keys (host bucket)
+(defun riak--get-riak-keys (host bucket)
   "Fetch keys for the given bucket"
   (message (concat "getting keys for " bucket))
   (web-http-get
    (lambda (con header data)
-     (display-keys data))
+     (riak--display-keys data))
    :url (concat "http://" host ":" riak-mode-riak-port "/buckets/" bucket "/keys?keys=true")))
 
-(defun get-key (host bucket key)
+(defun riak--get-key (host bucket key)
   "Get a specific key from the given bucket"
   (web-http-get
    (lambda (con headers data)
-     (with-current-buffer (output-buffer)
+     (with-current-buffer (riak--output-buffer)
        (erase-buffer)
        (insert data)))
    :url (concat "http://" host ":" riak-mode-riak-port "/riak/" bucket "/" key)))
 
-(defun display-keys (json-body)
+(defun riak--display-keys (json-body)
   "Parse and display the keys in the JSON body."
-  (with-current-buffer (output-buffer)
+  (with-current-buffer (riak--output-buffer)
     (let ((bucket-keys
            (cdr (assoc 'keys (json-read-from-string json-body)))))
       (erase-buffer)
       (mapcar (lambda (k) (insert (concat k "\n"))) bucket-keys))))
 
-(defun parse-buckets (json-body) 
+(defun riak--parse-buckets (json-body) 
   "Parse the given bucket list JSON.  Side effect of caching the buckets, gross."
   (let ((b (cdr (assoc 'buckets
               (json-read-from-string json-body)))))
     (setq riak-mode-bucket-vec b)
     b))
 
-(defun display-buckets (b)
+(defun riak--display-buckets (b)
   "Display the vector of buckets."
-  (with-current-buffer (output-buffer)
+  (with-current-buffer (riak--output-buffer)
     (erase-buffer)
     (setq riak-mode-current-bucket "")
     (mapcar (lambda (buck) (insert (concat buck "\n"))) b)))
 
-(defun line-at-cursor ()
+(defun riak--line-at-cursor ()
   "Simple convenience function to grab the line under the cursor minus the newline char"
   (replace-regexp-in-string "\n$" "" (thing-at-point 'line)))
 
 (defun riak-mode ()
-  (switch-to-buffer (output-buffer))
+  (switch-to-buffer (riak--output-buffer))
   (interactive)
   (kill-all-local-variables)
   (let ((riak-node (read-from-minibuffer "Riak node to use:  ")))
